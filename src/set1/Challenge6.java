@@ -102,8 +102,8 @@ public class Challenge6 {
 
 	public static void main(String[] args) {
 		try {
-			byte[] cipher = Base64.getDecoder().decode(String.join("", 
-						Files.readAllLines(Paths.get("src/set1/6.txt"))));
+			byte[] cipher = Base64.getDecoder()
+					.decode(String.join("", Files.readAllLines(Paths.get("src/set1/6.txt"))));
 			byte[] bestKey = breakVigenere(cipher, 2, 40);
 			System.out.println(Set1.bytesToString(bestKey));
 			System.out.println(bestKey.length);
