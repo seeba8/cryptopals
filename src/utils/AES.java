@@ -1,4 +1,4 @@
-package set1;
+package utils;
 
 import java.util.Arrays;
 
@@ -148,15 +148,26 @@ public class AES {
 	 *            byte array containing the key
 	 * @return byte array en-/ decrypted with the key, or null if there was an error
 	 */
-	public static byte[] encode(byte[] in, byte[] key) {
+	public static byte[] ecbEncode(byte[] in, byte[] key) {
 		// might need to use inverse sbox to decrypt?
-		byte[] state = in.clone();
+		byte[] plain = Utils.addPkcs7Padding(in, 16);
+		byte[] out = new byte[plain.length];
 		int Nb = 4; // length of an input or output block in 32-bit words
-		int Nk = key.length / 4; // length of the key in 32-bit words
-		int Nr = getNumberOfRounds(Nk);
 		byte[] w = keyExpansion(key);
+		for (int i = 0; i < plain.length / (Nb * Nb); i++) {
+			byte[] state = Arrays.copyOfRange(plain, i * Nb * Nb, (i + 1) * Nb * Nb);
+			state = aesEncodeBlock(state, w);
+			for (int j = 0; j < state.length; j++) {
+				out[i * Nb * Nb + j] = state[j];
+			}
+		}
+		return out;
 
-		// break apart input in blocks of 4*32 bits
+	}
+
+	private static byte[] aesEncodeBlock(byte[] state, byte[] w) {
+		int Nr = numberOfRounds(w.length);
+		int Nb = 4;
 		addRoundKey(state, Arrays.copyOfRange(w, 0, Nb * 4));
 		int round;
 		for (round = 1; round < Nr; round++) {
@@ -169,43 +180,112 @@ public class AES {
 		shiftRows(state, Nb);
 		addRoundKey(state, Arrays.copyOfRange(w, round * Nb * 4, (round + 1) * Nb * 4));
 		return state;
-
 	}
 
-	public static byte[] decode(byte[] in, byte[] key) {
+	public static byte[] ecbDecode(byte[] in, byte[] key) {
 		// might need to use inverse sbox to decrypt?
 		byte[] out = new byte[in.length];
 		int Nb = 4; // length of an input or output block in 32-bit words
-		int Nk = key.length / 4; // length of the key in 32-bit words
-		int Nr = getNumberOfRounds(Nk);
 		byte[] w = keyExpansion(key);
 		for (int i = 0; i < in.length / (Nb * Nb); i++) {
 			byte[] state = Arrays.copyOfRange(in, i * Nb * Nb, (i + 1) * Nb * Nb);
-			addRoundKey(state, Arrays.copyOfRange(w, Nr * Nb * 4, (Nr + 1) * Nb * 4));
-			int round;
-			for (round = Nr - 1; round > 0; round--) {
-				invShiftRows(state, Nb);
-				invSubBytes(state);
-				addRoundKey(state, Arrays.copyOfRange(w, round * Nb * 4, (round + 1) * Nb * 4));
-				invMixColumns(state, Nb);
-			}
-			invShiftRows(state, Nb);
-			invSubBytes(state);
-			addRoundKey(state, Arrays.copyOfRange(w, 0, Nb * 4));
-
+			state = aesDecodeBlock(state, w);
 			for (int j = 0; j < state.length; j++) {
 				out[i * Nb * Nb + j] = state[j];
 			}
 		}
+		return Utils.removePkcs7Padding(out);
+	}
 
-		return out;
+	/**
+	 * Decodes a block of text using AES (currently only 128 bit keys)
+	 * 
+	 * @param state
+	 *            A block of ciphertext
+	 * @param w
+	 *            The expanded key (run through keyExpansion(key))
+	 * @return The decoded byte array
+	 */
+	private static byte[] aesDecodeBlock(byte[] state, byte[] w) {
+		int Nr = numberOfRounds(w.length);
+		int Nb = 4;
+		addRoundKey(state, Arrays.copyOfRange(w, Nr * Nb * 4, (Nr + 1) * Nb * 4));
+		int round;
+		for (round = Nr - 1; round > 0; round--) {
+			invShiftRows(state, Nb);
+			invSubBytes(state);
+			addRoundKey(state, Arrays.copyOfRange(w, round * Nb * 4, (round + 1) * Nb * 4));
+			invMixColumns(state, Nb);
+		}
+		invShiftRows(state, Nb);
+		invSubBytes(state);
+		addRoundKey(state, Arrays.copyOfRange(w, 0, Nb * 4));
+		return state;
+	}
+
+	public static byte[] cbcEncode(byte[] in, byte[] key, byte[] iv) {
+		byte[] plain = Utils.addPkcs7Padding(in, 16);
+		byte[] ciphertext = new byte[plain.length];
+		byte[] expanded = keyExpansion(key);
+		for (int i = 0; i < plain.length / 16; i++) {
+			byte[] buf = Arrays.copyOfRange(ciphertext, i * 16, (i + 1) * 16);
+			if (i == 0) { // xor with initialization vector in the first round
+				buf = Utils.repeatingKeyXOR(buf, iv);
+			} else { // xor with previous ciphertext
+				buf = Utils.repeatingKeyXOR(buf, Arrays.copyOfRange(ciphertext, (i - 1) * 16, i * 16));
+			}
+			buf = aesEncodeBlock(buf, expanded);
+			for(int j = 0; j < 16; j++) {
+				ciphertext[i*16+j] = buf[j];
+			}
+		}
+		return ciphertext;
+	}
+
+	public static byte[] cbcDecode(byte[] ciphertext, byte[] key, byte[] iv) {
+		byte[] plain = new byte[ciphertext.length];
+		byte[] expanded = keyExpansion(key);
+		for (int i = 0; i < ciphertext.length / 16; i++) {
+			byte[] buf = Arrays.copyOfRange(ciphertext, i * 16, (i + 1) * 16);
+			buf = aesDecodeBlock(buf, expanded);
+			if (i == 0) { // xor with initialization vector in the first round
+				for (int j = 0; j < 16; j++) {
+					plain[i * 16 + j] = (byte) (buf[j] ^ iv[j]);
+				}
+			} else { // xor with previous ciphertext
+				for (int j = 0; j < 16; j++) {
+					plain[i * 16 + j] = (byte) (buf[j] ^ ciphertext[(i - 1) * 16 + j]);
+				}
+			}
+		}
+		return Utils.removePkcs7Padding(plain);
 	}
 
 	private static void addRoundKey(byte[] state, byte[] subkey) {
 		for (int i = 0; i < state.length; i++) {
 			state[i] ^= subkey[i];
 		}
+	}
 
+	/**
+	 * Returns the number of rounds based on the length of the expanded key
+	 * 
+	 * @param length
+	 *            Length of the expanded key in bytes
+	 * @return
+	 */
+	private static int numberOfRounds(int length) {
+		switch (length) {
+		case 176: // 128 bit key
+			return 10;
+		case 208: // 192 bit key
+			return 12;
+		case 240: // 256 bit key
+			return 14;
+		default:
+			System.out.println("INVALID");
+			return 0;
+		}
 	}
 
 	private static byte[] mixColumns(byte[] state, int Nb) {
@@ -221,7 +301,6 @@ public class AES {
 			}
 		}
 		return state;
-
 	}
 
 	public static byte[] invMixColumns(byte[] state, int Nb) {
@@ -298,24 +377,6 @@ public class AES {
 		}
 	}
 
-	private static int getNumberOfRounds(int Nk) {
-		int repetitions;
-		switch (Nk) {
-		case 4:
-			repetitions = 10;
-			break;
-		case 6:
-			repetitions = 12;
-			break;
-		case 8:
-			repetitions = 14;
-			break;
-		default:
-			return 0;
-		}
-		return repetitions;
-	}
-
 	/**
 	 * Shifts the byte array one byte to the left
 	 * 
@@ -366,7 +427,7 @@ public class AES {
 			// first four bytes:
 			t = Arrays.copyOfRange(expanded, progress - 4, progress);
 			t = keyScheduleCore(t, i++);
-			byte[] res = Set1.repeatingKeyXOR(t, Arrays.copyOfRange(expanded, progress - n, progress - n + 4));
+			byte[] res = Utils.repeatingKeyXOR(t, Arrays.copyOfRange(expanded, progress - n, progress - n + 4));
 			for (int k = 0; k < 4; k++) {
 				expanded[progress++] = res[k];
 			}
@@ -374,7 +435,7 @@ public class AES {
 			// Next twelve bytes:
 			for (int j = 0; j < 3; j++) {
 				t = Arrays.copyOfRange(expanded, progress - 4, progress);
-				res = Set1.repeatingKeyXOR(t, Arrays.copyOfRange(expanded, progress - n, progress - n + 4));
+				res = Utils.repeatingKeyXOR(t, Arrays.copyOfRange(expanded, progress - n, progress - n + 4));
 				for (int k = 0; k < 4; k++) {
 					expanded[progress++] = res[k];
 				}

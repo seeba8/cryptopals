@@ -8,29 +8,9 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 
+import utils.Utils;
+
 public class Challenge6 {
-	
-	public static int hammingDistance(byte[] a, byte[] b) {
-		int dist = 0;
-		if (a.length > b.length) {
-			b = padWithZeros(b, a.length);
-		} else if(b.length > a.length) {
-			a = padWithZeros(a, b.length);
-		}
-		
-		for(int i = 0; i < a.length; i++) {
-			dist += Integer.bitCount((b[i] ^ a[i]));
-		}
-		return dist;
-	}
-	
-	private static byte[] padWithZeros(byte[] b, int length) {
-		byte[] res = new byte[length];
-		for(int i = 0; i < b.length; i++) {
-			res[i] = b[i];
-		}
-		return res;
-	}
 	
 	public static Pair[] orderKeySizeGuesses(byte[] input, int minKeyLength, int maxKeyLength) {
 		ArrayList<Pair> list = new ArrayList<Pair>();
@@ -42,7 +22,7 @@ public class Challenge6 {
 			}
 			for(int j = 0; j < examples.length; j++) {
 				for (int k = 0; k < examples.length; k++) {
-					score += (1./6.) * (hammingDistance(examples[j], examples[k])/i);
+					score += (1./6.) * (Utils.hammingDistance(examples[j], examples[k])/i);
 				}
 			}
 //			list.add(new Pair(i,(float)hammingDistance(Arrays.copyOfRange(input, 0, i),
@@ -88,7 +68,7 @@ public class Challenge6 {
 			for(int i = 0; i < key.length; i++) {
 				key[i] = Set1.guessSingleCharXOR(transposed[i]);
 			}
-			byte[] plain = Set1.repeatingKeyXOR(cipher, key);
+			byte[] plain = Utils.repeatingKeyXOR(cipher, key);
 			float rating = Set1.rate(plain);
 			if(bestRating == 0 || rating > bestRating) {
 				bestRating = rating;
@@ -105,9 +85,9 @@ public class Challenge6 {
 			byte[] cipher = Base64.getDecoder()
 					.decode(String.join("", Files.readAllLines(Paths.get("src/set1/6.txt"))));
 			byte[] bestKey = breakVigenere(cipher, 2, 40);
-			System.out.println(Set1.bytesToString(bestKey));
+			System.out.println(Utils.bytesToString(bestKey));
 			System.out.println(bestKey.length);
-			System.out.println(Set1.bytesToString(Set1.repeatingKeyXOR(cipher, bestKey)));
+			System.out.println(Utils.bytesToString(Utils.repeatingKeyXOR(cipher, bestKey)));
 			
 		} catch (IOException e) {
 			e.printStackTrace();
