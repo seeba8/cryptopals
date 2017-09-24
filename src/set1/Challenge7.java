@@ -22,6 +22,7 @@ public class Challenge7 {
 		}
 		byte[] key = "YELLOW SUBMARINE".getBytes();
 		byte[] res = AES.decode(cipher, key);
+		res = set2.Challenge9.removePkcs7Padding(res);
 		System.out.println(Set1.bytesToString(res));
 	}
 
