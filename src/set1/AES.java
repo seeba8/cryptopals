@@ -157,17 +157,17 @@ public class AES {
 		byte[] w = keyExpansion(key);
 
 		// break apart input in blocks of 4*32 bits
-		addRoundKey(state, Arrays.copyOfRange(w, 0, Nb));
+		addRoundKey(state, Arrays.copyOfRange(w, 0, Nb * 4));
 		int round;
 		for (round = 1; round < Nr; round++) {
 			subBytes(state);
 			shiftRows(state, Nb);
 			mixColumns(state, Nb);
-			addRoundKey(state, Arrays.copyOfRange(w, round * Nb, (round + 1) * Nb));
+			addRoundKey(state, Arrays.copyOfRange(w, round * Nb * 4, (round + 1) * Nb * 4));
 		}
 		subBytes(state);
 		shiftRows(state, Nb);
-		addRoundKey(state, Arrays.copyOfRange(w, round * Nb, (round + 1) * Nb));
+		addRoundKey(state, Arrays.copyOfRange(w, round * Nb * 4, (round + 1) * Nb * 4));
 		return state;
 
 	}
