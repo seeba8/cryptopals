@@ -30,8 +30,13 @@ public class Set1 {
 	}
 
 	public static void printByteArray(byte[] arr) {
+		int c = 0;
 		for (byte b : arr) {
-			System.out.print(String.format("%02x", b));
+			if(c != 0 && c % 16 == 0) {
+				System.out.print("\n");
+			}
+			System.out.print(String.format("%02x ", b));
+			c++;
 		}
 		System.out.print("\n");
 	}
