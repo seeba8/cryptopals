@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Base64;
 
 public class Challenge7 {
@@ -24,7 +23,6 @@ public class Challenge7 {
 		byte[] key = "YELLOW SUBMARINE".getBytes();
 		byte[] res = AES.decode(cipher, key);
 		System.out.println(Set1.bytesToString(res));
-		Set1.printByteArray(res);
 	}
 
 }

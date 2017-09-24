@@ -30,6 +30,12 @@ public class Set1 {
 	}
 
 	public static void printByteArray(byte[] arr) {
+		for (byte b : arr) {
+			System.out.print(String.format("%02x", b));
+		}
+		System.out.print("\n");
+	}
+	public static void prettyPrintByteArray(byte[] arr) {
 		int c = 0;
 		for (byte b : arr) {
 			if(c != 0 && c % 16 == 0) {

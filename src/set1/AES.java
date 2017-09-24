@@ -210,14 +210,14 @@ public class AES {
 
 	private static byte[] mixColumns(byte[] state, int Nb) {
 		for (int i = 0; i < Nb; i++) {
-			byte[] b = Arrays.copyOfRange(state, i*Nb, (i+1)*Nb);
+			byte[] b = Arrays.copyOfRange(state, i * Nb, (i + 1) * Nb);
 			byte[] buf = b.clone();
 			buf[0] = (byte) (mixMult2[b[0] & 0xFF] ^ mixMult3[b[1] & 0xFF] ^ b[2] ^ b[3]);
 			buf[1] = (byte) (b[0] ^ mixMult2[b[1] & 0xFF] ^ mixMult3[b[2] & 0xFF] ^ b[3]);
 			buf[2] = (byte) (b[0] ^ b[1] ^ mixMult2[b[2] & 0xFF] ^ mixMult3[b[3] & 0xFF]);
 			buf[3] = (byte) (mixMult3[b[0] & 0xFF] ^ b[1] ^ b[2] ^ mixMult2[b[3] & 0xFF]);
 			for (int j = 0; j < Nb; j++) {
-				state[i*Nb+j] = buf[j];
+				state[i * Nb + j] = buf[j];
 			}
 		}
 		return state;
@@ -226,7 +226,7 @@ public class AES {
 
 	public static byte[] invMixColumns(byte[] state, int Nb) {
 		for (int i = 0; i < Nb; i++) {
-			byte[] b = Arrays.copyOfRange(state, i*Nb, (i+1)*Nb);
+			byte[] b = Arrays.copyOfRange(state, i * Nb, (i + 1) * Nb);
 			byte[] buf = b.clone();
 			buf[0] = (byte) (mixMult14[b[0] & 0xFF] ^ mixMult11[b[1] & 0xFF] ^ mixMult13[b[2] & 0xff]
 					^ mixMult9[b[3] & 0xff]);
@@ -237,7 +237,7 @@ public class AES {
 			buf[3] = (byte) (mixMult11[b[0] & 0xFF] ^ mixMult13[b[1] & 0xff] ^ mixMult9[b[2] & 0xff]
 					^ mixMult14[b[3] & 0xFF]);
 			for (int j = 0; j < Nb; j++) {
-				state[i*Nb+j] = buf[j];
+				state[i * Nb + j] = buf[j];
 			}
 		}
 		return state;
