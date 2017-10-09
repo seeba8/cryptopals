@@ -138,6 +138,11 @@ public class Challenge14 {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(new String(Utils.removePkcs7Padding(breakPaddingOracle(Challenge14::padEncrypt))));
+		try {
+			System.out.println(new String(Utils.removePkcs7Padding(breakPaddingOracle(Challenge14::padEncrypt))));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

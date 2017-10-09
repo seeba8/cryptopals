@@ -182,7 +182,7 @@ public class AES {
 		return state;
 	}
 
-	public static byte[] ecbDecode(byte[] in, byte[] key) {
+	public static byte[] ecbDecode(byte[] in, byte[] key) throws Exception {
 		// might need to use inverse sbox to decrypt?
 		byte[] out = new byte[in.length];
 		int Nb = 4; // length of an input or output block in 32-bit words
@@ -242,7 +242,7 @@ public class AES {
 		return ciphertext;
 	}
 
-	public static byte[] cbcDecode(byte[] ciphertext, byte[] key, byte[] iv) {
+	public static byte[] cbcDecode(byte[] ciphertext, byte[] key, byte[] iv) throws Exception {
 		byte[] plain = new byte[ciphertext.length];
 		byte[] expanded = keyExpansion(key);
 		for (int i = 0; i < ciphertext.length / 16; i++) {

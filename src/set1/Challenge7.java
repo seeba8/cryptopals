@@ -18,8 +18,15 @@ public class Challenge7 {
 			return;
 		}
 		byte[] key = "YELLOW SUBMARINE".getBytes();
-		byte[] res = AES.ecbDecode(cipher, key);
-		System.out.println(Utils.bytesToString(res));
+		byte[] res;
+		try {
+			res = AES.ecbDecode(cipher, key);
+			System.out.println(Utils.bytesToString(res));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 }

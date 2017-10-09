@@ -83,12 +83,17 @@ public class Utils {
 		return out;
 	}
 
-	public static byte[] removePkcs7Padding(byte[] input) {
+	public static byte[] removePkcs7Padding(byte[] input) throws Exception {
 		int len = input[input.length - 1];
-		if (len < input.length) {
-			return Arrays.copyOf(input, input.length - len);
+		if (len > input.length) {
+			return input.clone();
 		}
-		return input.clone();
+		for (int i = 0; i < len; i++) {
+			if (input[input.length - 1 - i] != len) {
+				throw new Exception("Bad padding");
+			}
+		}
+		return Arrays.copyOf(input, input.length - len);
 	}
 
 	public static boolean detectECBMode(byte[] ciphertext) {
@@ -135,4 +140,25 @@ public class Utils {
 	public static boolean isECBMode(final Function<byte[], byte[]> func) {
 		return Utils.detectECBMode(func.apply(new byte[128]));
 	}
+
+	public static byte[] concatArrays(byte[]... arrays) {
+		if (arrays.length == 0) {
+			return null;
+		}
+		if (arrays.length == 1) {
+			return arrays[0];
+		}
+		int totalLength = 0;
+		for (byte[] arr : arrays) {
+			totalLength += arr.length;
+		}
+		byte[] result = new byte[totalLength];
+		int offset = 0;
+		for (byte[] array : arrays) {
+			System.arraycopy(array, 0, result, offset, array.length);
+			offset += array.length;
+		}
+		return result;
+	}
+
 }

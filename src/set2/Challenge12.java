@@ -65,13 +65,20 @@ public class Challenge12 {
 	}
 
 	public static void main(final String[] args) {
-		final byte[] res = Utils.removePkcs7Padding(breakPaddingOracle(Challenge12::padEncrypt));
-		System.out.println(new String(res));
+		byte[] res;
+		try {
+			res = Utils.removePkcs7Padding(breakPaddingOracle(Challenge12::padEncrypt));
+			System.out.println(new String(res));
 
-		System.out.println("OR");
+			System.out.println("OR");
 
-		System.out
-				.println(new String(Utils.removePkcs7Padding(Challenge14.breakPaddingOracle(Challenge12::padEncrypt))));
-	}
+			System.out
+					.println(new String(Utils.removePkcs7Padding(Challenge14.breakPaddingOracle(Challenge12::padEncrypt))));
+		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}
 
 }

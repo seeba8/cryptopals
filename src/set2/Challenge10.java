@@ -18,8 +18,15 @@ public class Challenge10 {
 			e.printStackTrace();
 			return;
 		}
-		byte[] plain = AES.cbcDecode(ciphertext, key, iv);
-		System.out.println(Utils.bytesToString(plain));
+		byte[] plain;
+		try {
+			plain = AES.cbcDecode(ciphertext, key, iv);
+			System.out.println(Utils.bytesToString(plain));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 }
