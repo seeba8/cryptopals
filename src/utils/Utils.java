@@ -2,6 +2,8 @@ package utils;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
+import java.util.function.Function;
 
 public class Utils {
 	public static String toBase64(byte[] input) {
@@ -10,6 +12,8 @@ public class Utils {
 
 	public static String bytesToString(byte[] b) {
 		String s = "";
+		if (b == null)
+			return s;
 		for (int i = 0; i < b.length; i++) {
 			s += (char) (b[i]);
 		}
@@ -81,7 +85,10 @@ public class Utils {
 
 	public static byte[] removePkcs7Padding(byte[] input) {
 		int len = input[input.length - 1];
-		return Arrays.copyOf(input, input.length - len);
+		if (len < input.length) {
+			return Arrays.copyOf(input, input.length - len);
+		}
+		return input.clone();
 	}
 
 	public static boolean detectECBMode(byte[] ciphertext) {
@@ -94,5 +101,38 @@ public class Utils {
 			}
 		}
 		return false;
+	}
+
+	public static byte[] generateRandomKey() {
+		byte[] rnd = new byte[16];
+		new Random().nextBytes(rnd);
+		return rnd;
+	}
+
+	public static int detectBlockSize(final Function<byte[], byte[]> func) {
+		int block1Start = 0;
+		int block2Start = 0;
+		int c = 0;
+		int prevLen = 0;
+		while (block2Start == 0) {
+			final int len = func.apply(new byte[++c]).length;
+			if (prevLen == 0) {
+				prevLen = len;
+				continue;
+			}
+			if (len > prevLen) {
+				if (block1Start == 0) {
+					prevLen = len;
+					block1Start = c;
+				} else {
+					block2Start = c;
+				}
+			}
+		}
+		return block2Start - block1Start;
+	}
+
+	public static boolean isECBMode(final Function<byte[], byte[]> func) {
+		return Utils.detectECBMode(func.apply(new byte[128]));
 	}
 }

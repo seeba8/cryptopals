@@ -7,15 +7,9 @@ import utils.Utils;
 
 public class Challenge11 {
 
-	private static byte[] generateRandomKey() {
-		byte[] rnd = new byte[16];
-		new Random().nextBytes(rnd);
-		return rnd;
-	}
-
 	private static byte[] encryptionOracle(byte[] input) {
 		Random rnd = new Random();
-		byte[] key = generateRandomKey();
+		byte[] key = Utils.generateRandomKey();
 		boolean cbc = rnd.nextBoolean();
 		System.out.println("Actual mode: " + (cbc ? "CBC" : "ECB"));
 		int prefixLength = rnd.nextInt(5) + 5;
@@ -30,7 +24,7 @@ public class Challenge11 {
 		}
 		byte[] ciphertext = new byte[plain.length];
 		if (cbc) {
-			ciphertext = AES.cbcEncode(plain, key, generateRandomKey());
+			ciphertext = AES.cbcEncode(plain, key, Utils.generateRandomKey());
 		} else {
 			ciphertext = AES.ecbEncode(plain, key);
 		}

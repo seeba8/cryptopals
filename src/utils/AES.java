@@ -235,8 +235,8 @@ public class AES {
 				buf = Utils.repeatingKeyXOR(buf, Arrays.copyOfRange(ciphertext, (i - 1) * 16, i * 16));
 			}
 			buf = aesEncodeBlock(buf, expanded);
-			for(int j = 0; j < 16; j++) {
-				ciphertext[i*16+j] = buf[j];
+			for (int j = 0; j < 16; j++) {
+				ciphertext[i * 16 + j] = buf[j];
 			}
 		}
 		return ciphertext;

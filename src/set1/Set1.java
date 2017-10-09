@@ -31,8 +31,6 @@ public class Set1 {
 		return (float) normalLetters / res.length;
 	}
 
-	
-
 	public static void challenge5() {
 		String line = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal";
 		String key = "ICE";

@@ -11,6 +11,10 @@ public class ToByte {
 		return Base64.getDecoder().decode(String.join("", Files.readAllLines(p)));
 	}
 
+	public static byte[] base64Decode(String in) {
+		return Base64.getDecoder().decode(in);
+	}
+
 	public static byte[] hexDecode(String str) {
 		byte[] b = new byte[(int) Math.ceil(str.length() / 2)];
 		for (int i = 0; i < str.length(); i += 2) {
