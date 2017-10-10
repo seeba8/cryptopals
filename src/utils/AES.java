@@ -228,7 +228,7 @@ public class AES {
 		byte[] ciphertext = new byte[plain.length];
 		byte[] expanded = keyExpansion(key);
 		for (int i = 0; i < plain.length / 16; i++) {
-			byte[] buf = Arrays.copyOfRange(ciphertext, i * 16, (i + 1) * 16);
+			byte[] buf = Arrays.copyOfRange(plain, i * 16, (i + 1) * 16);
 			if (i == 0) { // xor with initialization vector in the first round
 				buf = Utils.repeatingKeyXOR(buf, iv);
 			} else { // xor with previous ciphertext
