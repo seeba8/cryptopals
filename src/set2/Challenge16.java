@@ -16,11 +16,11 @@ public class Challenge16 {
 		String suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
 		in = in.replace(";", "\";\"").replace("=", "\"=\"");
 		in = prefix + in + suffix;
-		return AES.cbcEncode(in.getBytes(), key, iv);
+		return AES.cbcPadEncode(in.getBytes(), key, iv);
 	}
 
 	private static byte[] decrypt(byte[] cipher) throws Exception {
-		return AES.cbcDecode(cipher, key, iv);
+		return AES.cbcDecodeUnpad(cipher, key, iv);
 	}
 
 	private static boolean isAdmin(byte[] in) {

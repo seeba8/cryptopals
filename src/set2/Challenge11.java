@@ -24,7 +24,7 @@ public class Challenge11 {
 		}
 		byte[] ciphertext = new byte[plain.length];
 		if (cbc) {
-			ciphertext = AES.cbcEncode(plain, key, Utils.generateRandomKey());
+			ciphertext = AES.cbcPadEncode(plain, key, Utils.generateRandomKey());
 		} else {
 			ciphertext = AES.ecbEncode(plain, key);
 		}

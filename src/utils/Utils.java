@@ -85,8 +85,8 @@ public class Utils {
 
 	public static byte[] removePkcs7Padding(byte[] input) throws Exception {
 		int len = input[input.length - 1];
-		if (len > input.length) {
-			return input.clone();
+		if (len > input.length || len <= 0) {
+			throw new Exception("Bad padding");
 		}
 		for (int i = 0; i < len; i++) {
 			if (input[input.length - 1 - i] != len) {

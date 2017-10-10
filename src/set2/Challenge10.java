@@ -20,7 +20,7 @@ public class Challenge10 {
 		}
 		byte[] plain;
 		try {
-			plain = AES.cbcDecode(ciphertext, key, iv);
+			plain = AES.cbcDecodeUnpad(ciphertext, key, iv);
 			System.out.println(Utils.bytesToString(plain));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
