@@ -1,5 +1,7 @@
 package utils;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class AES {
@@ -8,12 +10,11 @@ public class AES {
 	 * 
 	 * @param in
 	 *            byte array containing the input
-	 * @param w
+	 * @param key
 	 *            byte array containing the key
 	 * @return byte array en-/ decrypted with the key, or null if there was an error
 	 */
 	public static byte[] ecbEncode(byte[] in, byte[] key) {
-		// might need to use inverse sbox to decrypt?
 		byte[] plain = Utils.addPkcs7Padding(in, 16);
 		byte[] out = new byte[plain.length];
 		int Nb = 4; // length of an input or output block in 32-bit words
@@ -30,7 +31,6 @@ public class AES {
 	}
 
 	public static byte[] ecbDecode(byte[] in, byte[] key) throws Exception {
-		// might need to use inverse sbox to decrypt?
 		byte[] out = new byte[in.length];
 		int Nb = 4; // length of an input or output block in 32-bit words
 		byte[] w = keyExpansion(key);
@@ -43,7 +43,7 @@ public class AES {
 		}
 		return Utils.removePkcs7Padding(out);
 	}
-	
+
 	public static byte[] cbcPadEncode(byte[] in, byte[] key, byte[] iv) {
 		return cbcEncode(Utils.addPkcs7Padding(in, 16), key, iv);
 	}
@@ -84,11 +84,38 @@ public class AES {
 		}
 		return plain;
 	}
-	
+
 	public static byte[] cbcDecodeUnpad(byte[] cipher, byte[] key, byte[] iv) throws Exception {
-		return Utils.removePkcs7Padding(cbcDecode(cipher,key,iv));
+		return Utils.removePkcs7Padding(cbcDecode(cipher, key, iv));
 	}
-	
+
+	/**
+	 * Encrypts or decrypts a block using AES in CTR mode. The counter consists of a
+	 * nonce concatenated with a block counter, both in little-endian order
+	 * 
+	 * @param in
+	 *            the byte array to encrypt or decrypt
+	 * @param key
+	 *            the key to use
+	 * @param nonce
+	 *            the nonce as an initialization vector
+	 * @return
+	 */
+	public static byte[] CTR(byte[] in, byte[] key, long nonce) {
+		byte[] out = new byte[in.length];
+		long c = 0;
+		for (int i = 0; i < out.length; i += 16) {
+			byte[] keyblock = new byte[16];
+			byte[] counter = ByteBuffer.allocate(Long.BYTES * 2).order(ByteOrder.LITTLE_ENDIAN).putLong(nonce)
+					.putLong(c++).array();
+			keyblock = AES.ecbEncode(counter, key);
+			byte[] current = Arrays.copyOfRange(in, i, Math.min(i + 16, in.length));
+			byte[] xored = Utils.repeatingKeyXOR(current, keyblock);
+			System.arraycopy(xored, 0, out, i, xored.length);
+		}
+		return out;
+	}
+
 	/**
 	 * Decodes a block of text using AES (currently only 128 bit keys)
 	 * 
@@ -114,7 +141,7 @@ public class AES {
 		addRoundKey(state, Arrays.copyOfRange(w, 0, Nb * 4));
 		return state;
 	}
-	
+
 	private static byte[] aesEncodeBlock(byte[] state, byte[] w) {
 		int Nr = numberOfRounds(w.length);
 		int Nb = 4;
@@ -334,7 +361,7 @@ public class AES {
 		out[0] ^= rcon[i];
 		return out;
 	}
-	
+
 	private static int[] rcon = { 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab,
 			0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39,
 			0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8,
