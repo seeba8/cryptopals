@@ -1,4 +1,4 @@
-package set1;
+package utils;
 
 public class Pair implements Comparable<Pair> {
 	public final int key;
